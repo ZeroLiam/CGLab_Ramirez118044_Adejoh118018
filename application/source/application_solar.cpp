@@ -53,24 +53,86 @@ void ApplicationSolar::render() const {
 	sun.name = "sun"; //name
 	sun.size = { SUN_SIZE, SUN_SIZE, SUN_SIZE }; //default size, other planets are based of this
 	sun.translate = { 0.0, 0.0, 0.0 }; //stays in the center, doesnt have to move
-	sun.rotation = 1.0; //default
+	sun.rotation = 0.0; //for the rotation time on renderPlanet
 	sun.orbitDiff = 0;// orbit is default == 0 because sun is the center
-	sun.timeDiff = 0; //for the rotation time on renderPlanet
+
+	//Moon
+	Planet moon;
+	moon.name = "moon";
+	moon.size = { SUN_SIZE * 0.1, SUN_SIZE * 0.1, SUN_SIZE * 0.1 };
+	moon.translate = { DEFAULT_DIST * 2.0, DEFAULT_DIST * 2.0, DEFAULT_DIST * 2.0 };
+	moon.rotation = DEFAULT_ROTATION * 2.0; //for the rotation time on renderPlanet
+	moon.orbitDiff = DEFAULT_ORBIT * 3.0;
 
 	//MERCURY
 	Planet mercury;
 	mercury.name = "mercury"; 
 	mercury.size = { SUN_SIZE * 0.2, SUN_SIZE * 0.2, SUN_SIZE * 0.2 };
-	mercury.translate = { DEFAULT_DIST * 1.3, DEFAULT_DIST * 1.3, DEFAULT_DIST * 1.3 };
-	mercury.rotation = DEFAULT_ROTATION * 1.8; //default
-	mercury.orbitDiff = DEFAULT_ORBIT * 1.9;
-	mercury.timeDiff = DEFAULT_TIME * 0.7; //for the rotation time on renderPlanet
+	mercury.translate = { DEFAULT_DIST * 1.25, DEFAULT_DIST * 1.25, DEFAULT_DIST * 1.25 };
+	mercury.rotation = DEFAULT_ROTATION * 3.0; //for the rotation time on renderPlanet
+	mercury.orbitDiff = DEFAULT_ORBIT * 0.2;
+
+	//VENUS
+	Planet venus;
+	venus.name = "venus";
+	venus.size = { SUN_SIZE * 0.4, SUN_SIZE * 0.4, SUN_SIZE * 0.4 };
+	venus.translate = { DEFAULT_DIST * 1.30, DEFAULT_DIST * 1.30, DEFAULT_DIST * 1.30 };
+	venus.rotation = DEFAULT_ROTATION * -2.0; //for the rotation time on renderPlanet
+	venus.orbitDiff = DEFAULT_ORBIT * 0.6;
+
+	//EARTH
+	Planet earth;
+	earth.name = "earth";
+	earth.size = { SUN_SIZE * 0.5, SUN_SIZE * 0.5, SUN_SIZE * 0.5 };
+	earth.translate = { DEFAULT_DIST * 1.5, DEFAULT_DIST * 1.5, DEFAULT_DIST * 1.5 };
+	earth.rotation = DEFAULT_ROTATION * 1.0; //for the rotation time on renderPlanet
+	earth.orbitDiff = DEFAULT_ORBIT * 1.0;
+
+	//MARS
+	Planet mars;
+	mars.name = "mars";
+	mars.size = { SUN_SIZE * 0.25, SUN_SIZE * 0.25, SUN_SIZE * 0.25 };
+	mars.translate = { DEFAULT_DIST * 1.65, DEFAULT_DIST * 1.65, DEFAULT_DIST * 1.65 };
+	mars.rotation = DEFAULT_ROTATION * 1.3; //for the rotation time on renderPlanet
+	mars.orbitDiff = DEFAULT_ORBIT * 1.2;
+
+	//JUPITER
+	Planet jupiter;
+	jupiter.name = "jupiter";
+	jupiter.size = { SUN_SIZE * 0.8, SUN_SIZE * 0.8, SUN_SIZE * 0.8 };
+	jupiter.translate = { DEFAULT_DIST * 1.75, DEFAULT_DIST * 1.75, DEFAULT_DIST * 1.75 };
+	jupiter.rotation = DEFAULT_ROTATION * 0.5; //default
+	jupiter.orbitDiff = DEFAULT_ORBIT * 1.6;
+
+	//SATURN
+	Planet saturn;
+	saturn.name = "saturn";
+	saturn.size = { SUN_SIZE * 0.7, SUN_SIZE * 0.7, SUN_SIZE * 0.7 };
+	saturn.translate = { DEFAULT_DIST * 1.85, DEFAULT_DIST * 1.85, DEFAULT_DIST * 1.85 };
+	saturn.rotation = DEFAULT_ROTATION * 0.65; //default
+	saturn.orbitDiff = DEFAULT_ORBIT * 2.0;
+
+	//URANUS
+	Planet uranus;
+	uranus.name = "uranus";
+	uranus.size = { SUN_SIZE * 0.6, SUN_SIZE * 0.6, SUN_SIZE * 0.6 };
+	uranus.translate = { DEFAULT_DIST * 1.9, DEFAULT_DIST * 1.9, DEFAULT_DIST * 1.9 };
+	uranus.rotation = DEFAULT_ROTATION * -0.1; //default
+	uranus.orbitDiff = DEFAULT_ORBIT * 2.3;
+
+	//NEPTUNE
+	Planet neptune;
+	neptune.name = "neptune";
+	neptune.size = { SUN_SIZE * 0.63, SUN_SIZE * 0.63, SUN_SIZE * 0.63 };
+	neptune.translate = { DEFAULT_DIST * 2.0, DEFAULT_DIST * 2.0, DEFAULT_DIST * 2.0 };
+	neptune.rotation = DEFAULT_ROTATION * 0.75; //default
+	neptune.orbitDiff = DEFAULT_ORBIT * 3.0;
 
 	//gather all the planets in an array
-	Planet arrayOfPlanets[2] = { sun, mercury };//replace 2 with the total size of the solar system
+	Planet arrayOfPlanets[10] = { sun, moon, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune };//replace 2 with the total size of the solar system
 
 	//RENDER! via a loop
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 10; ++i) {
 		renderPlanets(arrayOfPlanets[i]);//call our custom function
 	}
 
@@ -159,7 +221,7 @@ void ApplicationSolar::renderPlanets(Planet thePlanet) const {
 
 	//3rd parameter is the rotation axis
 
-	glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime() * thePlanet.timeDiff), glm::fvec3{ 0.0f, 1.0f, 0.0f });
+	glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime() * thePlanet.rotation), glm::fvec3{ 0.0f, 1.0f, 0.0f });
 
 	//    VERY IMPORTANT!!!! THE ORDER OF SCALING/ROTATION/TRANSFORMATION WILL AFFECT THE FINAL RESULT AND RENDER!!!!!
 

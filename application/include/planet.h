@@ -11,7 +11,7 @@ struct Planet {
 	glm::fvec3 size;
 	glm::fvec3 translate;
 	float rotation;
-	float timeDiff;
+//	float timeDiff;
 	float orbitDiff;
 };
 
