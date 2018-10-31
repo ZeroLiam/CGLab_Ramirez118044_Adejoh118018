@@ -19,6 +19,7 @@ using namespace gl;
 
 #include <iostream>
 
+
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
  ,planet_object{}
@@ -39,21 +40,40 @@ void ApplicationSolar::render() const {
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("planet").handle);
 
-  glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
-  model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f});
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
-                     1, GL_FALSE, glm::value_ptr(model_matrix));
 
-  // extra matrix for normal transformation to keep them orthogonal to surface
-  glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
-                     1, GL_FALSE, glm::value_ptr(normal_matrix));
+  //ASSIGNMENT 1 - RENDER PLANETS
+  //Define planets and moon
+	int NUMBER_OF_CEL_BODIES = 10;
+	float SUN_SIZE = 7.0; //Default sun size
+	//Declare defaults for the min distance from the sun, the default for rotation, orbit, and speed time
+	float DEFAULT_DIST = 6.0, DEFAULT_ROTATION = 1.0, DEFAULT_ORBIT = 1.0, DEFAULT_TIME = 1.0;
 
-  // bind the VAO to draw
-  glBindVertexArray(planet_object.vertex_AO);
+	//SUN
+	Planet sun;
+	sun.name = "sun"; //name
+	sun.size = { SUN_SIZE, SUN_SIZE, SUN_SIZE }; //default size, other planets are based of this
+	sun.translate = { 0.0, 0.0, 0.0 }; //stays in the center, doesnt have to move
+	sun.rotation = 1.0; //default
+	sun.orbitDiff = 0;// orbit is default == 0 because sun is the center
+	sun.timeDiff = 0; //for the rotation time on renderPlanet
 
-  // draw bound vertex array using bound shader
-  glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+	//MERCURY
+	Planet mercury;
+	mercury.name = "mercury"; 
+	mercury.size = { SUN_SIZE * 0.2, SUN_SIZE * 0.2, SUN_SIZE * 0.2 };
+	mercury.translate = { DEFAULT_DIST * 1.3, DEFAULT_DIST * 1.3, DEFAULT_DIST * 1.3 };
+	mercury.rotation = DEFAULT_ROTATION * 1.8; //default
+	mercury.orbitDiff = DEFAULT_ORBIT * 1.9;
+	mercury.timeDiff = DEFAULT_TIME * 0.7; //for the rotation time on renderPlanet
+
+	//gather all the planets in an array
+	Planet arrayOfPlanets[2] = { sun, mercury };//replace 2 with the total size of the solar system
+
+	//RENDER! via a loop
+	for (int i = 0; i < 2; ++i) {
+		renderPlanets(arrayOfPlanets[i]);//call our custom function
+	}
+
 }
 
 void ApplicationSolar::uploadView() {
@@ -130,6 +150,45 @@ void ApplicationSolar::initializeGeometry() {
   planet_object.num_elements = GLsizei(planet_model.indices.size());
 }
 
+//ASSIGNMENT 1 - RENDER PLANETS
+void ApplicationSolar::renderPlanets(Planet thePlanet) const {
+
+	//1st is the already created matrix obj
+
+	//2nd parameter rotation values (deg)
+
+	//3rd parameter is the rotation axis
+
+	glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime() * thePlanet.timeDiff), glm::fvec3{ 0.0f, 1.0f, 0.0f });
+
+	//    VERY IMPORTANT!!!! THE ORDER OF SCALING/ROTATION/TRANSFORMATION WILL AFFECT THE FINAL RESULT AND RENDER!!!!!
+
+	//scale first
+	model_matrix = glm::scale(model_matrix, glm::fvec3(thePlanet.size));
+
+	//translate the sphere according to the vector we have in the 2nd param
+
+	model_matrix = glm::translate(model_matrix, glm::fvec3{ thePlanet.translate[0], 0.0f, -1.0f });
+
+	glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));
+
+	// extra matrix for normal transformation to keep them orthogonal to surface
+
+	//Used for the colors
+
+	glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+
+	glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
+
+		1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+	// bind the VAO to draw
+	glBindVertexArray(planet_object.vertex_AO);
+	// draw bound vertex array using bound shader
+	glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+
+}
+
 ///////////////////////////// callback functions for window events ////////////
 // handle key input
 void ApplicationSolar::keyCallback(int key, int action, int mods) {
@@ -141,11 +200,48 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
     uploadView();
   }
+  // move scene right
+
+  else if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+	  m_view_transform = glm::translate(m_view_transform, glm::fvec3{ -1.0f, 0.0f, 0.0f });
+	  uploadView();
+  }
+    //move scene left
+  else if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+	  m_view_transform = glm::translate(m_view_transform, glm::fvec3{ 1.0f, 0.0f, 0.0f });
+	  uploadView();
+  }
 }
 
 //handle delta mouse movement input
 void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
   // mouse handling
+	float x = 0.0f;
+	float y = 0.0f;
+
+	//move the camera according to the mouse
+	const float moveMouseX = 0.9f;
+	const float moveMouseY = 0.3f;
+	//    Move in X
+	if (pos_x > 0) {
+		x = -moveMouseX;
+	}
+	else if (pos_x < 0) {
+		x = moveMouseX;
+	}
+	//    Move in Y
+	if (pos_y > 0) {
+		y = -moveMouseY;
+	}
+	else if (pos_y < 0) {
+		y = moveMouseY;
+	}
+	// If the rotation of the mouse changes, you should too
+
+	m_view_transform = glm::rotate(m_view_transform, glm::radians(x), glm::fvec3{ 0.0f, 1.0f, 0.0f });
+	m_view_transform = glm::rotate(m_view_transform, glm::radians(y), glm::fvec3{ 1.0f, 0.0f, 0.0f });
+
+	uploadView();
 }
 
 //handle resizing
